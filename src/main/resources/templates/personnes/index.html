@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Personnes</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" />
+  </head>
+  <body>
+    <div class="main-content">
+      <div class="page-content">
+        <div class="container-fluid">
+
+          <!-- ── Breadcrumb ── -->
+          <div class="row">
+            <div class="col-12">
+              <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                <h4 class="mb-sm-0">Personnes</h4>
+                <div class="page-title-right">
+                  <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="#">Tables</a></li>
+                    <li class="breadcrumb-item active">Personne</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Flash messages ── -->
+          <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+
+          <!-- ══════════════════════════════════════════════════
+               SÉLECTEUR DE GROUPE
+          ══════════════════════════════════════════════════ -->
+          <div class="row mb-3">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-body">
+                  <form th:action="@{/personnes}" method="get"
+                        class="d-flex align-items-center gap-3">
+                    <label class="form-label mb-0 fw-semibold text-nowrap">
+                      <i class="ri-group-line me-1"></i> Groupe :
+                    </label>
+                    <select name="groupeId" class="form-select w-auto"
+                            onchange="this.form.submit()">
+                      <option value="">-- Sélectionner un groupe --</option>
+                      <option th:each="g : ${groupes}"
+                              th:value="${g.id}"
+                              th:text="${g.anarana}"
+                              th:selected="${g.id == groupeSelectionne}">
+                      </option>
+                    </select>
+
+                    <!-- Bouton Ajouter (visible seulement si un groupe est choisi) -->
+                    <div th:if="${groupeSelectionne != null and !#strings.isEmpty(groupeSelectionne)}"
+                         class="ms-auto">
+                      <button type="button"
+                              class="btn btn-success bg-gradient"
+                              data-bs-toggle="modal"
+                              data-bs-target="#modalCreate">
+                        <i class="ri-add-line align-bottom me-1"></i> Ajouter
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Message si aucun groupe sélectionné ── -->
+          <div th:if="${groupeSelectionne == null or #strings.isEmpty(groupeSelectionne)}"
+               class="row">
+            <div class="col-12">
+              <div class="alert alert-info text-center">
+                <i class="ri-information-line me-1"></i>
+                Veuillez sélectionner un groupe pour afficher les personnes.
+              </div>
+            </div>
+          </div>
+
+          <!-- ══════════════════════════════════════════════════
+               DEUX TABLEAUX CÔTE À CÔTE (visible si groupe choisi)
+          ══════════════════════════════════════════════════ -->
+          <div th:if="${groupeSelectionne != null and !#strings.isEmpty(groupeSelectionne)}"
+               class="row g-3">
+
+            <!-- ── Tableau FEMMES (gauche) ── -->
+            <div class="col-lg-6">
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-danger bg-opacity-10 d-flex align-items-center">
+                  <i class="ri-women-line text-danger fs-5 me-2"></i>
+                  <h5 class="card-title mb-0 text-danger">
+                    Vehivavy
+                    <span class="badge bg-danger ms-2"
+                          th:text="${#lists.size(femmes)}"></span>
+                  </h5>
+                </div>
+                <div class="card-body p-0">
+                  <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th>ID</th>
+                          <th>Anarana</th>
+                          <th>Laharana</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="p : ${femmes}">
+                          <td><small th:text="${p.id}" class="text-muted"></small></td>
+                          <td th:text="${p.anarana}"></td>
+                          <td th:text="${p.laharana}"></td>
+                          <td>
+                            <div class="hstack gap-2">
+                              <button type="button"
+                                      class="btn btn-sm btn-warning btn-edit"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#modalEdit"
+                                      th:attr="data-id=${p.id},
+                                               data-anarana=${p.anarana},
+                                               data-genre=${p.genre},
+                                               data-laharana=${p.laharana},
+                                               data-groupe=${p.groupe?.id},
+                                               data-categorie=${p.categorie?.id}">
+                                <i class="ri-edit-line"></i>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(femmes)}">
+                          <td colspan="5" class="text-center text-muted py-3">
+                            <i class="ri-inbox-line me-1"></i> Aucune femme dans ce groupe.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Tableau HOMMES (droite) ── -->
+            <div class="col-lg-6">
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary bg-opacity-10 d-flex align-items-center">
+                  <i class="ri-men-line text-primary fs-5 me-2"></i>
+                  <h5 class="card-title mb-0 text-primary">
+                    Lehilahy
+                    <span class="badge bg-primary ms-2"
+                          th:text="${#lists.size(hommes)}"></span>
+                  </h5>
+                </div>
+                <div class="card-body p-0">
+                  <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th>ID</th>
+                          <th>Anarana</th>
+                          <th>Laharana</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="p : ${hommes}">
+                          <td><small th:text="${p.id}" class="text-muted"></small></td>
+                          <td th:text="${p.anarana}"></td>
+                          <td th:text="${p.laharana}"></td>
+                          <td>
+                            <div class="hstack gap-2">
+                              <button type="button"
+                                      class="btn btn-sm btn-warning btn-edit"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#modalEdit"
+                                      th:attr="data-id=${p.id},
+                                               data-anarana=${p.anarana},
+                                               data-genre=${p.genre},
+                                               data-laharana=${p.laharana},
+                                               data-groupe=${p.groupe?.id},
+                                               data-categorie=${p.categorie?.id}">
+                                <i class="ri-edit-line"></i>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(hommes)}">
+                          <td colspan="5" class="text-center text-muted py-3">
+                            <i class="ri-inbox-line me-1"></i> Aucun homme dans ce groupe.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <!-- /row deux tableaux -->
+
+
+          <!-- ════════════════════════════════════════════════
+               MODAL — CRÉATION
+          ════════════════════════════════════════════════ -->
+          <div class="modal fade" id="modalCreate" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header bg-light p-3">
+                  <h5 class="modal-title">Nouvelle Personne</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <!-- On conserve groupeId dans l'URL pour rester sur le même groupe après redirect -->
+                <form th:action="@{/personnes}" method="post">
+                  <div class="modal-body">
+
+                    <div class="mb-3">
+                      <label class="form-label">Anarana</label>
+                      <input type="text" name="anarana" class="form-control"
+                             placeholder="Entrez le nom" required />
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Genre</label>
+                      <select name="genre" class="form-select" required>
+                        <option value="">-- Choisir --</option>
+                        <option value="2">Vehivavy</option>
+                        <option value="1">Lehilahy</option>
+                      </select>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Laharana</label>
+                      <input type="text" name="laharana" class="form-control"
+                             placeholder="Entrez le laharana" />
+                    </div>
+
+                    <!-- Groupe pré-sélectionné = groupe courant -->
+                    <div class="mb-3">
+                      <label class="form-label">Groupe</label>
+                      <select name="groupeId" class="form-select" required>
+                        <option value="">-- Choisir --</option>
+                        <option th:each="g : ${groupes}"
+                                th:value="${g.id}"
+                                th:text="${g.anarana}"
+                                th:selected="${g.id == groupeSelectionne}">
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Catégorie</label>
+                      <select name="categorieId" class="form-select" required>
+                        <option value="">-- Choisir --</option>
+                        <option th:each="c : ${categories}"
+                                th:value="${c.id}"
+                                th:text="${c.anarana}">
+                        </option>
+                      </select>
+                    </div>
+
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fermer</button>
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- ════════════════════════════════════════════════
+               MODAL — MODIFICATION
+          ════════════════════════════════════════════════ -->
+          <div class="modal fade" id="modalEdit" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header bg-light p-3">
+                  <h5 class="modal-title">Modifier la Personne</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formEdit" method="post">
+                  <div class="modal-body">
+
+                    <div class="mb-3">
+                      <label class="form-label">Anarana</label>
+                      <input type="text" id="edit-anarana" name="anarana"
+                             class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Genre</label>
+                      <select id="edit-genre" name="genre" class="form-select" required>
+                        <option value="2">Vehivavy</option>
+                        <option value="1">Lehilahy</option>
+                      </select>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Laharana</label>
+                      <input type="text" id="edit-laharana" name="laharana"
+                             class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Groupe</label>
+                      <select id="edit-groupe" name="groupeId" class="form-select" required>
+                        <option value="">-- Choisir --</option>
+                        <option th:each="g : ${groupes}"
+                                th:value="${g.id}"
+                                th:text="${g.anarana}">
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Catégorie</label>
+                      <select id="edit-categorie" name="categorieId" class="form-select" required>
+                        <option value="">-- Choisir --</option>
+                        <option th:each="c : ${categories}"
+                                th:value="${c.id}"
+                                th:text="${c.anarana}">
+                        </option>
+                      </select>
+                    </div>
+
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fermer</button>
+                    <button type="submit" class="btn btn-warning">Mettre à jour</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /container-fluid -->
+      </div><!-- /page-content -->
+    </div><!-- /main-content -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script th:inline="javascript">
+      const groupeSelectionne = /*[[${groupeSelectionne}]]*/ '';
+
+      // ── Modal Modifier ───────────────────────────────────────────────────
+      document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id        = btn.dataset.id;
+          const anarana   = btn.dataset.anarana;
+          const genre     = btn.dataset.genre;
+          const laharana  = btn.dataset.laharana;
+          const groupe    = btn.dataset.groupe;
+          const categorie = btn.dataset.categorie;
+
+          // Action : conserve le groupeId pour le redirect
+          document.getElementById('formEdit').action =
+            `/personnes/${id}`;
+
+          document.getElementById('edit-anarana').value  = anarana;
+          document.getElementById('edit-laharana').value = laharana;
+          document.getElementById('edit-genre').value    = genre;
+          document.getElementById('edit-groupe').value   = groupe;
+          document.getElementById('edit-categorie').value = categorie;
+        });
+      });
+    </script>
+
+  </body>
+</html>
